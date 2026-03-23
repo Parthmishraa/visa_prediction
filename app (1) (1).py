@@ -7,13 +7,6 @@ Original file is located at
     https://colab.research.google.com/drive/1F-rZTafr41b0uDTJQlXo_oTLP2jvvcct
 """
 
-import os
-os.system("pip install joblib scikit-learn pandas numpy")
-
-pip install streamlit
-
-pip install joblib
-
 import streamlit as st
 import pandas as pd
 import joblib
