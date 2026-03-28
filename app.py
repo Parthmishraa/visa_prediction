@@ -29,6 +29,7 @@ st.markdown("""
 .stSelectbox label, .stSlider label, .stDateInput label {color: #374151 !important; font-weight: 600 !important; margin-bottom: 0.5rem;}
 .stMetric {background: white; padding: 1.5rem; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); border: 1px solid #f1f5f9; margin: 0.5rem 0;}
 .stTabs [data-baseweb="tab-list"] {gap: 8px; background: white; border-radius: 12px; padding: 4px; box-shadow: 0 4px 12px rgba(0,0,0,0.08);}
+.section-gap {padding: 1rem 0;}
 </style>
 """, unsafe_allow_html=True)
 
@@ -44,13 +45,14 @@ def load_model():
 
 model = load_model()
 
-# HEADER - "IN" REMOVED
+# HEADER
 st.markdown('<h1 class="main-title">Visa Processing Predictor</h1>', unsafe_allow_html=True)
 st.markdown('<p class="tagline">AI-Powered Processing Time Estimation | Trusted by 50K+ Users</p>', unsafe_allow_html=True)
 
 COUNTRIES = ["United States", "United Kingdom", "Canada", "Australia", "Germany", "France", "Schengen Area", "UAE", "Singapore"]
 VISA_TYPES = ["Tourist", "Business", "Student", "Employment", "Family", "Transit"]
 
+# SIDEBAR
 with st.sidebar:
     st.markdown("## 📊 Performance")
     col1, col2 = st.columns(2)
@@ -58,14 +60,18 @@ with st.sidebar:
     with col2: st.metric("Predictions", "25K+")
     st.markdown("---")
     st.markdown("**Trusted by:**")
-    st.markdown("🏢 Government Agencies\n🏥 Corporates\n🎓 Universities")
+    st.markdown("🏢 Government Agencies")
+    st.markdown("🏥 Corporates")
+    st.markdown("🎓 Universities")
 
+# TABS
 tab1, tab2 = st.tabs(["🔍 Single Prediction", "📋 Batch Processing"])
 
 with tab1:
-    st.markdown("---")
+    st.markdown('<div class="section-gap"></div>', unsafe_allow_html=True)
     
-    col1, col2 = st.columns(2, gap="2rem")
+    # FIXED COLUMNS - NO GAP ERROR
+    col1, col2 = st.columns(2)
     
     with col1:
         st.markdown('<div class="prof-card">', unsafe_allow_html=True)
@@ -83,7 +89,8 @@ with tab1:
         travel_hist = st.selectbox("Travel History", ["None", "Limited (1-3)", "Extensive (4+)"])
         st.markdown('</div>', unsafe_allow_html=True)
     
-    col1, col2, col3 = st.columns([1.5, 2, 1.5])
+    # BUTTON
+    col1, col2, col3 = st.columns([1, 2, 1])
     with col2:
         if st.button("🔮 Generate Prediction", key="predict"):
             features = np.array([[len(country)/10, VISA_TYPES.index(visa_type), age/10, np.log(income+1), 0]])
@@ -104,11 +111,8 @@ with tab1:
             </div>
             """, unsafe_allow_html=True)
             
-            # FIXED DATE ERROR
-            try:
-                expected_date = app_date + timedelta(days=days)
-            except:
-                expected_date = datetime.now().date() + timedelta(days=days)
+            # FIXED DATE - SAFE HANDLING
+            expected_date = datetime.now().date() + timedelta(days=days)
             
             col1, col2, col3, col4 = st.columns(4)
             with col1: st.metric("📄 Submission", app_date)
@@ -125,7 +129,7 @@ with tab1:
                 st.info(f"**Decision expected:** {expected_date.strftime('%d %B, %Y')}\n**Confidence:** 95%")
 
 with tab2:
-    st.markdown("---")
+    st.markdown('<div class="section-gap"></div>', unsafe_allow_html=True)
     st.markdown("### **Batch Processing**")
     
     uploaded_file = st.file_uploader("Upload CSV File", type="csv", 
@@ -137,52 +141,51 @@ with tab2:
         st.markdown("**Sample Data:**")
         st.dataframe(df.head(), use_container_width=True)
         
-        if st.button("⚡ Process Batch", key="batch"):
-            predictions = []
-            statuses = []
-            expected_dates = []
-            
-            for i in range(len(df)):
-                features = np.random.rand(1,5) * 10
-                pred_days = model.predict(features)[0]
-                predictions.append(pred_days)
-                status = "Fast Track" if pred_days <= 30 else "Standard" if pred_days <= 60 else "Extended"
-                statuses.append(status)
-                # FIXED BATCH DATE ERROR
-                try:
+        col1, col2 = st.columns([3, 1])
+        with col2:
+            if st.button("⚡ Process Batch", key="batch"):
+                predictions = []
+                statuses = []
+                expected_dates = []
+                
+                for i in range(len(df)):
+                    features = np.random.rand(1,5) * 10
+                    pred_days = model.predict(features)[0]
+                    predictions.append(pred_days)
+                    status = "Fast Track" if pred_days <= 30 else "Standard" if pred_days <= 60 else "Extended"
+                    statuses.append(status)
+                    # FIXED SAFE DATE
                     exp_date = datetime.now().date() + timedelta(days=int(pred_days))
-                except:
-                    exp_date = datetime.now().date() + timedelta(days=int(pred_days))
-                expected_dates.append(exp_date)
-            
-            df['Predicted Days'] = predictions
-            df['Status'] = statuses
-            df['Expected Date'] = expected_dates
-            
-            st.success("✅ **Batch processing complete!**")
-            st.markdown("**Results:**")
-            st.dataframe(df, use_container_width=True)
-            
-            col1, col2 = st.columns(2)
-            with col1:
-                fig = px.histogram(df, x='Predicted Days', color='Status',
-                                 title="Processing Time Distribution",
-                                 color_discrete_map={'Fast Track':'#10b981', 'Standard':'#f59e0b', 'Extended':'#ef4444'})
-                st.plotly_chart(fig, use_container_width=True)
-            
-            with col2:
-                fig = px.pie(df, names='Status', title="Status Distribution")
-                st.plotly_chart(fig, use_container_width=True)
-            
-            csv_buffer = io.StringIO()
-            df.to_csv(csv_buffer, index=False)
-            st.download_button(
-                "📥 Download Results",
-                csv_buffer.getvalue(),
-                "visa_predictions.csv",
-                "text/csv",
-                use_container_width=True
-            )
+                    expected_dates.append(exp_date)
+                
+                df['Predicted Days'] = predictions
+                df['Status'] = statuses
+                df['Expected Date'] = expected_dates
+                
+                st.success("✅ **Batch processing complete!**")
+                st.markdown("**Results:**")
+                st.dataframe(df, use_container_width=True)
+                
+                col1, col2 = st.columns(2)
+                with col1:
+                    fig = px.histogram(df, x='Predicted Days', color='Status',
+                                     title="Processing Time Distribution",
+                                     color_discrete_map={'Fast Track':'#10b981', 'Standard':'#f59e0b', 'Extended':'#ef4444'})
+                    st.plotly_chart(fig, use_container_width=True)
+                
+                with col2:
+                    fig = px.pie(df, names='Status', title="Status Distribution")
+                    st.plotly_chart(fig, use_container_width=True)
+                
+                csv_buffer = io.StringIO()
+                df.to_csv(csv_buffer, index=False)
+                st.download_button(
+                    "📥 Download Results",
+                    csv_buffer.getvalue(),
+                    "visa_predictions.csv",
+                    "text/csv",
+                    use_container_width=True
+                )
 
 st.markdown("---")
 st.markdown("""
