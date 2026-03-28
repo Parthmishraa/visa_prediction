@@ -49,7 +49,18 @@ model = load_model()
 st.markdown('<h1 class="main-title">Visa Processing Predictor</h1>', unsafe_allow_html=True)
 st.markdown('<p class="tagline">AI-Powered Processing Time Estimation | Trusted by 50K+ Users</p>', unsafe_allow_html=True)
 
-COUNTRIES = ["United States", "United Kingdom", "Canada", "Australia", "Germany", "France", "Schengen Area", "UAE", "Singapore"]
+COUNTRIES = [
+    "India", "United States", "United Kingdom", "Canada", "Australia", 
+    "Germany", "France", "Italy", "Spain", "Netherlands",
+    "Switzerland", "Sweden", "Norway", "Denmark", "Finland",
+    "Austria", "Belgium", "Ireland", "New Zealand", "Singapore",
+    "United Arab Emirates", "Qatar", "Saudi Arabia", "Japan",
+    "South Korea", "Malaysia", "Thailand", "Indonesia", "Philippines",
+    "Vietnam", "China", "Hong Kong", "Taiwan", "Russia",
+    "Turkey", "Greece", "Portugal", "Poland", "Czech Republic",
+    "Hungary", "South Africa", "Brazil", "Mexico", "Argentina",
+    "UAE", "Bahrain", "Kuwait", "Oman", "Egypt", "Morocco"
+]
 VISA_TYPES = ["Tourist", "Business", "Student", "Employment", "Family", "Transit"]
 
 # SIDEBAR
