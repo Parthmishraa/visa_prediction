@@ -3,12 +3,8 @@ import pandas as pd
 import numpy as np
 import plotly.express as px
 import plotly.graph_objects as go
-import plotly.figure_factory as ff
-from plotly.subplots import make_subplots
-import pickle
-import io
 from datetime import datetime, timedelta
-import streamlit.components.v1 as components
+import io
 
 # Page config
 st.set_page_config(
@@ -36,16 +32,17 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
-# Demo Model (Replace with your real model)
+# FIXED Demo Model
 @st.cache_resource
 def load_model():
     class VisaModel:
         def predict(self, X):
-            # Demo predictions based on features
             base_time = 45
-            country_factor = np.array([30, 35, 25, 40, 20, 22, 18, 15, 12])[np.random.randint(0,9,len(X))]
-            visa_factor = np.array([20, 35, 50, 60, 45, 10])[np.random.randint(0,6,len(X))]
-            return np.clip(base_time + country_factor + visa_factor + np.random.normal(0, 10, len(X)), 5, 120).astype(int)
+            country_factor = np.array([30, 35, 25, 40, 20, 22, 18, 15, 12])
+            visa_factor = np.array([20, 35, 50, 60, 45, 10])
+            country_idx = np.random.randint(0, len(country_factor), len(X))
+            visa_idx = np.random.randint(0, len(visa_factor), len(X))
+            return np.clip(base_time + country_factor[country_idx] + visa_factor[visa_idx] + np.random.normal(0, 8, len(X)), 5, 120).astype(int)
     return VisaModel()
 
 model = load_model()
@@ -60,7 +57,7 @@ with col2:
 COUNTRIES = ["USA", "UK", "Canada", "Australia", "Germany", "France", "Schengen", "UAE", "Singapore"]
 VISA_TYPES = ["Tourist", "Business", "Student", "Work", "Family Reunion", "Transit"]
 
-# Sidebar info
+# Sidebar
 with st.sidebar:
     st.markdown("## 📊 Quick Stats")
     st.info("✅ **Accuracy**: 94.7%\n📈 **Predictions**: 12K+\n⚡ **Speed**: <1s")
@@ -69,7 +66,6 @@ with st.sidebar:
 tab1, tab2 = st.tabs(["🔮 Single Prediction", "📊 Bulk Upload"])
 
 with tab1:
-    # Input Section
     st.markdown("---")
     col1, col2 = st.columns(2)
     
@@ -87,16 +83,14 @@ with tab1:
         travel_hist = st.selectbox("✈️ Travel History", ["None", "1-2 countries", "3+ countries"])
         st.markdown('</div>', unsafe_allow_html=True)
     
-    # Predict Button
+    # FIXED Predict Button
     if st.button("🚀 Predict Processing Time", key="single_predict"):
-        # Create features
         features = np.array([[0, 0, 0, age/10, income/10000, 0]])
         days = model.predict(features)[0]
         
         status = "✅ Fast Track" if days < 30 else "⏳ Standard" if days < 60 else "⚠️ May Delay"
         color = "success-card" if days < 30 else "warning-card" if days < 60 else "metric-card"
         
-        # Results
         st.balloons()
         
         col1, col2, col3 = st.columns([1, 2, 1])
@@ -109,17 +103,17 @@ with tab1:
             </div>
             """, unsafe_allow_html=True)
         
-        # Timeline
+        # FIXED Date handling
         expected_date = app_date + timedelta(days=days)
+        
         col1, col2 = st.columns(2)
         with col1:
-            st.metric("Submission", app_date)
-            st.metric("Expected Decision", expected_date)
+            st.metric("📅 Submission", app_date)
+            st.metric("✅ Expected Decision", expected_date)
         with col2:
-            st.metric("Processing Days", f"{days} days")
-            st.metric("Status", status)
+            st.metric("⏱️ Processing Days", f"{days} days")
+            st.metric("🏷️ Status", status)
         
-        # Progress Bar
         progress = min(days/90, 1.0)
         st.progress(progress)
         st.success(f"🎯 Expected approval by **{expected_date.strftime('%B %d, %Y')}**")
@@ -144,9 +138,11 @@ with tab2:
             df['status'] = df['predicted_days'].apply(
                 lambda x: "✅ Fast" if x < 30 else "⏳ Standard" if x < 60 else "⚠️ Delay"
             )
-            df['expected_date'] = pd.to_datetime(df.index).dt.date + pd.to_timedelta(df['predicted_days'], unit='D')
             
-            # Results
+            # FIXED expected_date for bulk
+            today_date = datetime.now().date()
+            df['expected_date'] = [today_date + timedelta(days=int(d)) for d in df['predicted_days']]
+            
             st.success("🎉 Bulk prediction complete!")
             st.dataframe(df)
             
@@ -154,18 +150,19 @@ with tab2:
             col1, col2 = st.columns(2)
             with col1:
                 fig = px.histogram(df, x='predicted_days', color='status', 
-                                 title="Processing Time Distribution")
+                                 title="📊 Processing Time Distribution")
                 st.plotly_chart(fig, use_container_width=True)
             
             with col2:
-                fig_pie = px.pie(df, names='status', title="Status Breakdown")
+                fig_pie = px.pie(df, names='status', title="📈 Status Breakdown")
                 st.plotly_chart(fig_pie, use_container_width=True)
             
             # Download
-            csv = df.to_csv(index=False).encode('utf-8')
+            csv_buffer = io.StringIO()
+            df.to_csv(csv_buffer, index=False)
             st.download_button(
                 "📥 Download Results",
-                csv,
+                csv_buffer.getvalue(),
                 "visa_predictions.csv",
                 "text/csv"
             )
@@ -175,6 +172,6 @@ st.markdown("---")
 st.markdown("""
 <div style='text-align: center; padding: 2rem; color: #718096; font-family: Inter;'>
     <h3>✨ Powered by AI | Deployed on Streamlit Cloud</h3>
-    <p>Professional Visa Processing Time Predictions</p>
+    <p>Professional Visa Processing Time Predictions 🚀</p>
 </div>
 """, unsafe_allow_html=True)
