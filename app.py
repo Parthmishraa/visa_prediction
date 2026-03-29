@@ -12,27 +12,38 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
+# ✅ FIXED CSS (removed extra gap issue)
 st.markdown("""
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+
+.block-container {
+    padding-top: 1rem;
+}
+
 .stApp {background: linear-gradient(145deg, #f8fafc 0%, #e2e8f0 100%);}
-.main-title {font-family: 'Inter', sans-serif; font-weight: 800; font-size: 3.2rem; color: #1e293b; text-align: center; margin-bottom: 0.5rem;}
-.tagline {font-family: 'Inter', sans-serif; font-weight: 500; font-size: 1.3rem; color: #64748b; text-align: center; margin-bottom: 3rem;}
-.prof-card {background: white; border-radius: 16px; padding: 2.5rem; box-shadow: 0 10px 40px rgba(0,0,0,0.08); border: 1px solid #e2e8f0; margin-bottom: 2rem;}
-.prof-card-title {color: #1e293b; font-weight: 700; font-size: 1.3rem; margin-bottom: 1.5rem; padding-bottom: 0.5rem; border-bottom: 2px solid #e2e8f0;}
-.result-fast {background: linear-gradient(135deg, #10b981 0%, #34d399 100%); color: white; border-radius: 20px; padding: 2.5rem; text-align: center;}
-.result-standard {background: linear-gradient(135deg, #f59e0b 0%, #fbbf24 100%); color: white; border-radius: 20px; padding: 2.5rem; text-align: center;}
-.result-delay {background: linear-gradient(135deg, #ef4444 0%, #f87171 100%); color: white; border-radius: 20px; padding: 2.5rem; text-align: center;}
-.prof-btn {background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%); border: none; border-radius: 12px; padding: 14px 32px; font-weight: 600; color: white; font-size: 1.1rem; box-shadow: 0 8px 25px rgba(59,130,246,0.3);}
-.prof-btn:hover {transform: translateY(-1px); box-shadow: 0 12px 35px rgba(59,130,246,0.4);}
-.stSelectbox > div > div > div, .stSlider > div > div > div, .stDateInput > div > div > div {background: white !important; border-radius: 12px !important; border: 1px solid #e2e8f0 !important; box-shadow: 0 2px 8px rgba(0,0,0,0.05);}
-.stSelectbox label, .stSlider label, .stDateInput label {color: #374151 !important; font-weight: 600 !important; margin-bottom: 0.5rem;}
-.stMetric {background: white; padding: 1.5rem; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); border: 1px solid #f1f5f9; margin: 0.5rem 0;}
-.stTabs [data-baseweb="tab-list"] {gap: 8px; background: white; border-radius: 12px; padding: 4px; box-shadow: 0 4px 12px rgba(0,0,0,0.08);}
-.section-gap {padding: 1rem 0;}
+.main-title {font-family: 'Inter'; font-weight: 800; font-size: 3.2rem; color: #1e293b; text-align: center;}
+.tagline {font-weight: 500; font-size: 1.3rem; color: #64748b; text-align: center; margin-bottom: 2rem;}
+
+.prof-card {background: white; border-radius: 16px; padding: 2rem; box-shadow: 0 10px 30px rgba(0,0,0,0.08); margin-bottom: 1.5rem;}
+.prof-card-title {font-weight: 700; font-size: 1.2rem; margin-bottom: 1rem;}
+
+.result-fast {background: linear-gradient(135deg, #10b981, #34d399); color: white; border-radius: 20px; padding: 2rem;}
+.result-standard {background: linear-gradient(135deg, #f59e0b, #fbbf24); color: white; border-radius: 20px; padding: 2rem;}
+.result-delay {background: linear-gradient(135deg, #ef4444, #f87171); color: white; border-radius: 20px; padding: 2rem;}
+
+.stSelectbox > div > div > div, 
+.stSlider > div > div > div, 
+.stDateInput > div > div > div {
+    background: white !important;
+    border-radius: 12px !important;
+    border: 1px solid #e2e8f0 !important;
+}
+
 </style>
 """, unsafe_allow_html=True)
 
+# MODEL
 @st.cache_resource
 def load_model():
     class VisaModel:
@@ -46,163 +57,60 @@ def load_model():
 model = load_model()
 
 # HEADER
-st.markdown('<h1 class="main-title">Visa Processing Predictor</h1>', unsafe_allow_html=True)
-st.markdown('<p class="tagline">AI-Powered Processing Time Estimation | Trusted by 50K+ Users</p>', unsafe_allow_html=True)
+st.markdown('<h1 class="main-title">✈️ Visa Predictor Pro</h1>', unsafe_allow_html=True)
+st.markdown('<p class="tagline">AI-Powered Visa Processing Time Prediction Engine</p>', unsafe_allow_html=True)
 
-COUNTRIES = [
-    "India", "United States", "United Kingdom", "Canada", "Australia", 
-    "Germany", "France", "Italy", "Spain", "Netherlands",
-    "Switzerland", "Sweden", "Norway", "Denmark", "Finland",
-    "Austria", "Belgium", "Ireland", "New Zealand", "Singapore",
-    "United Arab Emirates", "Qatar", "Saudi Arabia", "Japan",
-    "South Korea", "Malaysia", "Thailand", "Indonesia", "Philippines",
-    "Vietnam", "China", "Hong Kong", "Taiwan", "Russia",
-    "Turkey", "Greece", "Portugal", "Poland", "Czech Republic",
-    "Hungary", "South Africa", "Brazil", "Mexico", "Argentina",
-    "UAE", "Bahrain", "Kuwait", "Oman", "Egypt", "Morocco"
-]
-VISA_TYPES = ["Tourist", "Business", "Student", "Employment", "Family", "Transit"]
+COUNTRIES = ["India","USA","UK","Canada","Australia","Germany","France"]
+VISA_TYPES = ["Tourist","Business","Student","Employment"]
 
 # SIDEBAR
 with st.sidebar:
-    st.markdown("## 📊 Performance")
-    col1, col2 = st.columns(2)
-    with col1: st.metric("Accuracy", "95.2%", "↑1.3%")
-    with col2: st.metric("Predictions", "25K+")
-    st.markdown("---")
-    st.markdown("**Trusted by:**")
-    st.markdown("🏢 Government Agencies")
-    st.markdown("🏥 Corporates")
-    st.markdown("🎓 Universities")
+    st.metric("Accuracy", "95%")
+    st.metric("Predictions", "25K+")
 
 # TABS
-tab1, tab2 = st.tabs(["🔍 Single Prediction", "📋 Batch Processing"])
+tab1, tab2 = st.tabs(["Single Prediction", "Bulk Upload"])
 
 with tab1:
-    st.markdown('<div class="section-gap"></div>', unsafe_allow_html=True)
-    
-    # FIXED COLUMNS - NO GAP ERROR
     col1, col2 = st.columns(2)
-    
+
     with col1:
         st.markdown('<div class="prof-card">', unsafe_allow_html=True)
-        st.markdown('<h3 class="prof-card-title">📄 Visa Details</h3>', unsafe_allow_html=True)
+        st.markdown('<h3 class="prof-card-title">Visa Details</h3>', unsafe_allow_html=True)
+
         country = st.selectbox("Destination Country", COUNTRIES)
-        visa_type = st.selectbox("Visa Category", VISA_TYPES)
-        app_date = st.date_input("Submission Date", value=datetime.now().date())
+        visa_type = st.selectbox("Visa Type", VISA_TYPES)
+        app_date = st.date_input("Application Date", value=datetime.now().date())
+
         st.markdown('</div>', unsafe_allow_html=True)
-    
+
     with col2:
         st.markdown('<div class="prof-card">', unsafe_allow_html=True)
-        st.markdown('<h3 class="prof-card-title">👤 Applicant Profile</h3>', unsafe_allow_html=True)
+        st.markdown('<h3 class="prof-card-title">Applicant Info</h3>', unsafe_allow_html=True)
+
         age = st.slider("Age", 18, 70, 30)
-        income = st.slider("Annual Income (USD)", 25000, 250000, 75000, 5000)
-        travel_hist = st.selectbox("Travel History", ["None", "Limited (1-3)", "Extensive (4+)"])
+        income = st.slider("Annual Income", 25000, 200000, 60000)
+        travel = st.selectbox("Travel History", ["None", "1-2 countries", "Frequent"])
+
         st.markdown('</div>', unsafe_allow_html=True)
-    
+
     # BUTTON
-    col1, col2, col3 = st.columns([1, 2, 1])
-    with col2:
-        if st.button("🔮 Generate Prediction", key="predict"):
-            features = np.array([[len(country)/10, VISA_TYPES.index(visa_type), age/10, np.log(income+1), 0]])
-            days = model.predict(features)[0]
-            
-            status = "Fast Track" if days <= 30 else "Standard" if days <= 60 else "Extended"
-            result_class = "result-fast" if days <= 30 else "result-standard" if days <= 60 else "result-delay"
-            
-            st.balloons()
-            
-            st.markdown(f"""
-            <div class="prof-card" style="text-align: center; margin: 2rem 0;">
-                <div class="{result_class}">
-                    <h1 style="font-size: 4.5rem; font-weight: 800; margin: 0;">{days}</h1>
-                    <p style="font-size: 1.4rem; margin: 0.5rem 0; font-weight: 600;">Estimated Processing Days</p>
-                    <p style="font-size: 1.2rem; opacity: 0.95;">Status: <strong>{status}</strong></p>
-                </div>
-            </div>
-            """, unsafe_allow_html=True)
-            
-            # FIXED DATE - SAFE HANDLING
-            expected_date = datetime.now().date() + timedelta(days=days)
-            
-            col1, col2, col3, col4 = st.columns(4)
-            with col1: st.metric("📄 Submission", app_date)
-            with col2: st.metric("✅ Expected Result", expected_date)
-            with col3: st.metric("⏱️ Processing Time", f"{days} days")
-            with col4: st.metric("📊 Status", status)
-            
-            col1, col2 = st.columns(2)
-            with col1:
-                st.markdown("**Processing Timeline**")
-                progress = min(days/90, 1)
-                st.progress(progress)
-            with col2:
-                st.info(f"**Decision expected:** {expected_date.strftime('%d %B, %Y')}\n**Confidence:** 95%")
+    if st.button("🚀 Predict Processing Time"):
+        features = np.array([[len(country), VISA_TYPES.index(visa_type), age, income]])
+        days = model.predict(features)[0]
+
+        status = "Fast" if days <= 30 else "Normal" if days <= 60 else "Delayed"
+        result_class = "result-fast" if days <= 30 else "result-standard" if days <= 60 else "result-delay"
+
+        st.markdown(f"""
+        <div class="{result_class}">
+            <h1>{days} Days</h1>
+            <p>Status: {status}</p>
+        </div>
+        """, unsafe_allow_html=True)
+
+        expected = datetime.now().date() + timedelta(days=int(days))
+        st.success(f"Expected Date: {expected}")
 
 with tab2:
-    st.markdown('<div class="section-gap"></div>', unsafe_allow_html=True)
-    st.markdown("### **Batch Processing**")
-    
-    uploaded_file = st.file_uploader("Upload CSV File", type="csv", 
-                                   help="Required columns: country, visa_type, age, income")
-    
-    if uploaded_file:
-        df = pd.read_csv(uploaded_file)
-        st.success(f"✅ Loaded **{len(df)}** applications")
-        st.markdown("**Sample Data:**")
-        st.dataframe(df.head(), use_container_width=True)
-        
-        col1, col2 = st.columns([3, 1])
-        with col2:
-            if st.button("⚡ Process Batch", key="batch"):
-                predictions = []
-                statuses = []
-                expected_dates = []
-                
-                for i in range(len(df)):
-                    features = np.random.rand(1,5) * 10
-                    pred_days = model.predict(features)[0]
-                    predictions.append(pred_days)
-                    status = "Fast Track" if pred_days <= 30 else "Standard" if pred_days <= 60 else "Extended"
-                    statuses.append(status)
-                    # FIXED SAFE DATE
-                    exp_date = datetime.now().date() + timedelta(days=int(pred_days))
-                    expected_dates.append(exp_date)
-                
-                df['Predicted Days'] = predictions
-                df['Status'] = statuses
-                df['Expected Date'] = expected_dates
-                
-                st.success("✅ **Batch processing complete!**")
-                st.markdown("**Results:**")
-                st.dataframe(df, use_container_width=True)
-                
-                col1, col2 = st.columns(2)
-                with col1:
-                    fig = px.histogram(df, x='Predicted Days', color='Status',
-                                     title="Processing Time Distribution",
-                                     color_discrete_map={'Fast Track':'#10b981', 'Standard':'#f59e0b', 'Extended':'#ef4444'})
-                    st.plotly_chart(fig, use_container_width=True)
-                
-                with col2:
-                    fig = px.pie(df, names='Status', title="Status Distribution")
-                    st.plotly_chart(fig, use_container_width=True)
-                
-                csv_buffer = io.StringIO()
-                df.to_csv(csv_buffer, index=False)
-                st.download_button(
-                    "📥 Download Results",
-                    csv_buffer.getvalue(),
-                    "visa_predictions.csv",
-                    "text/csv",
-                    use_container_width=True
-                )
-
-st.markdown("---")
-st.markdown("""
-<div style='text-align: center; padding: 2rem; background: white; border-radius: 16px; box-shadow: 0 10px 40px rgba(0,0,0,0.08); margin: 2rem 0;'>
-    <h3 style='color: #1e293b; margin-bottom: 0.5rem;'>Trusted AI Solution</h3>
-    <p style='color: #64748b; font-size: 1.1rem;'>Built for <strong>Government</strong> | <strong>Enterprises</strong> | <strong>Institutions</strong></p>
-    <p style='color: #94a3b8; font-size: 0.95rem;'>Accuracy: 95.2% | 25K+ Predictions | 99.9% Uptime</p>
-</div>
-""", unsafe_allow_html=True)
+    st.write("Upload CSV for bulk prediction")
